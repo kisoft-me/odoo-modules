@@ -116,7 +116,7 @@
                         </group>
                     </group>
                     <notebook>
-                        <page string=" Recurring Fees ">
+                        <page string=" Scheduled Fees ">
                             <field name="contract_line_ids">
                                 <list editable="bottom">
                                     <field name="product_id"/>
@@ -127,6 +127,7 @@
                                     <field name="tax_ids" widget="many2many_tags"/>
                                     <field name="discount"/>
                                     <field name="sub_total"/>
+                                    <field name="due_on"/>
                                 </list>
                             </field>
                             <h2 class="oe_subtotal_footer oe_right">

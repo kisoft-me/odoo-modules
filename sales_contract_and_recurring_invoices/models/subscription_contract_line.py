@@ -62,6 +62,7 @@ class SubscriptionContractLines(models.Model):
     sub_total = fields.Monetary(
         string="Total", compute='_compute_amount', store=True, precompute=True,
         help='Sub Total Amount')
+    due_on=fields.Datetime(string="Due On", store=True, readonly=False,)
 
     sale_line_id = fields.Many2one(
         'sale.order.line',

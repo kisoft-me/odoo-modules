@@ -20,7 +20,7 @@
                 <field name="contract_id" invisible="1" optional="hide"/>
             </xpath>
             <xpath expr="//field[@name='partner_id']" position="after">
-                <field name="contract_id" readonly="1" string="Contract Reference"/>
+                <field name="contract_id" readonly="0" string="Contract Reference"/>
             </xpath>
         </field>
     </record>
