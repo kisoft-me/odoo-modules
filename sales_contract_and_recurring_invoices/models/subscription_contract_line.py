@@ -63,6 +63,30 @@ class SubscriptionContractLines(models.Model):
         string="Total", compute='_compute_amount', store=True, precompute=True,
         help='Sub Total Amount')
 
+    sale_line_id = fields.Many2one(
+        'sale.order.line',
+        string='Sale Order Line'
+    )
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        lines = super().create(vals_list)
+        for line in lines:
+            order = self.env['sale.order'].search([
+                ('contract_id', '=', line.subscription_contract_id.id)
+            ], limit=1)
+
+            if order:
+                sale_line = self.env['sale.order.line'].create({
+                    'order_id': order.id,
+                    'product_id': line.product_id.id,
+                    'product_uom_qty': line.qty_ordered,
+                    'price_unit': line.price_unit,
+                    'contract_id': line.subscription_contract_id.id,
+                })
+                line.sale_line_id = sale_line.id
+        return lines
+
     @api.depends('product_id')
     def _compute_description(self):
         """ Compute product description """

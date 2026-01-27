@@ -97,6 +97,63 @@ class SubscriptionContracts(models.Model):
         compute='_compute_invoice_active',
         help='Compute invoices are active or not')
 
+    def action_create_sale_order(self):
+        self.ensure_one()
+        print('ffffffffffffffffffffffffffffffffffffffff')
+
+        order = self.env['sale.order'].create({
+            'partner_id': self.partner_id.id,
+            'contract_id': self.id,
+        })
+        return {
+            'type': 'ir.actions.act_window',
+            'res_model': 'sale.order',
+            'view_mode': 'form',
+            'res_id': order.id,
+        }
+
+    @api.depends('current_reference')
+    def _compute_sale_order_lines(self):
+        print('dddddddddddddddddddddddddddddddddddddddddddddddddddddddd')
+        """ Get sale order line of contract lines """
+        print("sale order line compute", self.current_reference)
+        self.current_reference = self.id
+
+        product_id = self.contract_line_ids.mapped('product_id')
+        sale_order_line = self.env['sale.order.line'].search([
+            ('order_partner_id', '=', self.partner_id.id)
+        ])
+        print('ffffffffffffffffffffffffffff', sale_order_line)
+        print('eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee', product_id)
+        print(sale_order_line)
+        print("products", product_id)
+        for rec in sale_order_line:
+            if self.date_start <= datetime.datetime.date(
+                    rec.create_date) <= self.date_end:
+                if rec.product_id in product_id:
+                    print(rec.product_id, product_id, self.id)
+                    rec.contract_id = self.id
+
+    def action_view_sale_orders(self):
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Sale Orders',
+            'res_model': 'sale.order',
+            'view_mode': 'list,form',
+            'domain': [('contract_id', '=', self.id)],
+        }
+
+    sale_order_count = fields.Integer(
+        compute='_compute_sale_order_count'
+    )
+
+    def _compute_sale_order_count(self):
+        for rec in self:
+            rec.sale_order_count = self.env['sale.order'].search_count([
+                ('contract_id', '=', rec.id)
+            ])
+
     def action_to_confirm(self):
         """ Confirm the Contract """
         self.write({'state': 'Ongoing'})
@@ -141,7 +198,11 @@ class SubscriptionContracts(models.Model):
             'name': 'Invoices',
             'view_mode': 'list,form',
             'res_model': 'account.move',
-            'domain': [('contract_origin', '=', self.id)],
+             'domain': [
+            '|',
+            ('contract_origin', '=', self.id),
+            ('invoice_line_ids.sale_line_ids.order_id.contract_id', '=', self.id),
+        ],
         }
 
     @api.depends('contract_line_ids.sub_total')
@@ -154,9 +215,13 @@ class SubscriptionContracts(models.Model):
     @api.depends('partner_id')
     def _compute_invoice_count(self):
         """ Compute the count of invoices generated """
-        self.invoice_count = self.env['account.move'].search_count([
-            ('contract_origin', '=', self.id)
-        ])
+        for rec in self:
+            domain = [
+                '|',
+                ('contract_origin', '=', rec.id),
+                ('invoice_line_ids.sale_line_ids.order_id.contract_id', '=', rec.id),
+            ]
+            rec.invoice_count = self.env['account.move'].search_count(domain)
 
     @api.depends('invoices_active')
     def _compute_invoice_active(self):
@@ -235,25 +300,5 @@ class SubscriptionContracts(models.Model):
                 rec.invoice_count = rec.env['account.move'].search_count([
                     ('contract_origin', '=', rec.id)])
 
-    @api.depends('current_reference')
-    def _compute_sale_order_lines(self):
-        print('dddddddddddddddddddddddddddddddddddddddddddddddddddddddd')
-        """ Get sale order line of contract lines """
-        print("sale order line compute",self.current_reference)
-        self.current_reference = self.id
 
-        product_id = self.contract_line_ids.mapped('product_id')
-        sale_order_line = self.env['sale.order.line'].search([
-            ('order_partner_id', '=', self.partner_id.id)
-        ])
-        print('ffffffffffffffffffffffffffff',sale_order_line)
-        print('eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',product_id)
-        print(sale_order_line)
-        print("products",product_id)
-        for rec in sale_order_line:
-            if self.date_start <= datetime.datetime.date(
-                    rec.create_date) <= self.date_end:
-                if rec.product_id in product_id:
-                    print(rec.product_id ,product_id,self.id)
-                    rec.contract_id = self.id
 

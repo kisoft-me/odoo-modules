@@ -15,8 +15,10 @@
     <!-- Contracts menu -->
     <menuitem id="subscription_contract_menu_action"
               name="Contracts"
-              parent="sale.menu_sale_config"
-              action="subscription_contracts_action"/>
+              parent="sale.sale_menu_root"
+              action="subscription_contracts_action"
+              sequence="10"
+    />
     <!-- Subscription contract form view -->
     <record id="subscription_contracts_view_form" model="ir.ui.view">
         <field name="name">subscription.contracts.view.form</field>
@@ -51,9 +53,15 @@
                             help="Cancel; your Subscription Contracts"
                             invisible="state not in ('Ongoing', 'Expire Soon')"
                     />
+                    <button name="action_create_sale_order"
+                            type="object"
+                            string="Create Sale Order"
+                            class="btn-primary"
+                            invisible="state not in ('Ongoing', 'Expire Soon')"/>
+
                 </header>
                 <sheet>
-                    <div class="oe_button_box" name="button_box" invisible="not invoices_active">
+                    <div class="oe_button_box" name="button_box">
                         <button class="oe_stat_button" type="object"
                                 name="action_get_invoice"
                                 icon="fa-pencil-square-o"
@@ -62,6 +70,12 @@
                             <field string="Invoices"
                                    name="invoice_count" widget="statinfo"
                             />
+                        </button>
+                        <button name="action_view_sale_orders"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-shopping-cart">
+                            <field name="sale_order_count" widget="statinfo"/>
                         </button>
                     </div>
                     <div class="oe_title">
@@ -77,11 +91,11 @@
                             <field name="partner_id" options="{'no_create': True}"
                                    readonly="lock"/>
                             <field name="recurring_period"
-                                   readonly="lock"/>
+                                   readonly="lock" invisible="1"/>
                             <field name="recurring_period_interval"
-                                   readonly="lock"/>
+                                   readonly="lock" invisible="1"/>
                             <field name="recurring_invoice"
-                                   readonly="lock"/>
+                                   readonly="lock" invisible="1"/>
                             <field name="next_invoice_date"
                                    readonly="lock"/>
                             <field name="current_reference" invisible="1"/>
@@ -102,7 +116,7 @@
                         </group>
                     </group>
                     <notebook>
-                        <page string="Contract Lines">
+                        <page string=" Recurring Fees ">
                             <field name="contract_line_ids">
                                 <list editable="bottom">
                                     <field name="product_id"/>
@@ -121,6 +135,7 @@
                                 </group>
                             </h2>
                         </page>
+
                         <page string="Sale Order Lines">
                             <field name="sale_order_line_ids">
                                 <list editable="bottom">
