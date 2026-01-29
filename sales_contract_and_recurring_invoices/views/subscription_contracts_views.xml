@@ -137,7 +137,7 @@
                             </h2>
                         </page>
 
-                        <page string="Sale Order Lines">
+                        <page string="Sale Order Lines" invisible="1">
                             <field name="sale_order_line_ids">
                                 <list editable="bottom">
                                     <field name="order_id"/>

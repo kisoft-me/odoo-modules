@@ -34,7 +34,7 @@ class SubscriptionContracts(models.Model):
                        help='Name of Contract')
     reference = fields.Char(string='Reference', help='Contract reference')
     partner_id = fields.Many2one('res.partner', string="Customer",
-                                 help='Customer for this contract')
+                                 help='Customer for this contract',required=True)
     recurring_period = fields.Integer(string='Recurring Period',
                                       help='Recurring period of '
                                            'subscription contract')
